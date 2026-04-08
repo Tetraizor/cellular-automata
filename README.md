@@ -1,1 +1,3 @@
-# cellular-automata
+# Falling Sand Game with Cellular Automata
+
+Work in progress...
