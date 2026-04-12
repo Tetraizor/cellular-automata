@@ -17,6 +17,11 @@ public:
     uint64_t get_ticks_passed() const { return ticks; };
     uint64_t get_millis_passed() const { return millis; };
 
+    static const int WORLD_WIDTH = 200;
+    static const int WORLD_HEIGHT = 150;
+
+    static const int ZOOM_FACTOR = 5;
+
 private:
     uint64_t ticks;
     double millis;

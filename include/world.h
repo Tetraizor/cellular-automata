@@ -17,6 +17,9 @@ public:
     void update();
     const uint32_t *get_cell_colors() const;
 
+    int get_width() const { return width; }
+    int get_height() const { return height; }
+
 private:
     int width;
     int height;

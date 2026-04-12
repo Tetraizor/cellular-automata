@@ -12,15 +12,13 @@ int Engine::run()
 {
     std::cout << "Starting the engine..." << std::endl;
 
-    World world(800, 600);
+    World world(WORLD_WIDTH, WORLD_HEIGHT);
 
-    if (!wm.initialize(800, 600))
+    if (!wm.initialize(WORLD_WIDTH * ZOOM_FACTOR, WORLD_HEIGHT * ZOOM_FACTOR))
         return 1;
 
-    if (!renderer.initialize(800, 600, wm.get_sdl_renderer_ptr()))
+    if (!renderer.initialize(WORLD_WIDTH * ZOOM_FACTOR, WORLD_HEIGHT * ZOOM_FACTOR, &world, wm.get_sdl_renderer_ptr()))
         return 1;
-
-    renderer.set_target_world(&world);
 
     // Initialize game loop
 
