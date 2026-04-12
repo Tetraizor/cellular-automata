@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include "window_manager.h"
+#include "renderer.h"
 
 const uint64_t FIXED_TICK_RATE = 60; // Per second
 
@@ -23,4 +24,5 @@ private:
     bool is_running;
 
     WindowManager wm;
+    Renderer renderer;
 };

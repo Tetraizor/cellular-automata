@@ -7,8 +7,8 @@ WindowManager::~WindowManager()
     std::cout << "Closing window..." << std::endl;
 
     // Graceful exit
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
+    SDL_DestroyRenderer(sdl_renderer_ptr);
+    SDL_DestroyWindow(sdl_window_ptr);
     SDL_Quit();
 }
 
@@ -29,7 +29,7 @@ bool WindowManager::initialize(int width, int height)
     const char *window_title = "Cellular Automata (DEBUG)";
 #endif
 
-    window = SDL_CreateWindow(
+    sdl_window_ptr = SDL_CreateWindow(
         window_title,
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
@@ -37,33 +37,24 @@ bool WindowManager::initialize(int width, int height)
         height,
         SDL_WINDOW_SHOWN);
 
-    if (!window)
+    if (!sdl_window_ptr)
     {
         std::cerr << "Window failed to create: " << SDL_GetError() << std::endl;
         SDL_Quit();
         return false;
     }
 
-    renderer = SDL_CreateRenderer(
-        window,
+    sdl_renderer_ptr = SDL_CreateRenderer(
+        sdl_window_ptr,
         -1,
         SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
-    if (!renderer)
+    if (!sdl_renderer_ptr)
     {
         std::cerr << "Renderer faield to create: " << SDL_GetError() << std::endl;
         SDL_Quit();
         return false;
     }
-
-    SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
-    SDL_RenderClear(renderer);
-
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderDrawLine(renderer, 0, 0, width, height);
-    SDL_RenderDrawLine(renderer, width, 0, 0, height);
-
-    SDL_RenderPresent(renderer);
 
     return true;
 }

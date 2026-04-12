@@ -3,6 +3,8 @@
 #include <iostream>
 #include <chrono>
 
+#include "world.h"
+
 Engine::Engine() : ticks(0), millis(0), is_running(true) {}
 Engine::~Engine() {}
 
@@ -10,8 +12,17 @@ int Engine::run()
 {
     std::cout << "Starting the engine..." << std::endl;
 
+    World world(800, 600);
+
     if (!wm.initialize(800, 600))
         return 1;
+
+    if (!renderer.initialize(800, 600, wm.get_sdl_renderer_ptr()))
+        return 1;
+
+    renderer.set_target_world(&world);
+
+    // Initialize game loop
 
     const double MAX_FRAME_TIME = 250.0; // For protection against sprial of death
     double accumulator = 0;
@@ -54,12 +65,13 @@ int Engine::run()
             // TODO: Game logic
 
             // TODO: Physics logic
+            world.update();
 
             // TODO: Rendering
+            renderer.render();
+
             ticks++;
             accumulator -= 1000.0 / FIXED_TICK_RATE;
-
-            std::cout << ticks << std::endl;
         }
 
         SDL_Delay(1); // To prevent busy waiting to some degree, temporary fix until seperate logic/render threads
