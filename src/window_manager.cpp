@@ -2,6 +2,10 @@
 
 #include <iostream>
 
+#include <imgui.h>
+#include <imgui_impl_sdl2.h>
+#include <imgui_impl_sdlrenderer2.h>
+
 WindowManager::~WindowManager()
 {
     std::cout << "Closing window..." << std::endl;
@@ -55,6 +59,16 @@ bool WindowManager::initialize(int width, int height)
         SDL_Quit();
         return false;
     }
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    (void)io;
+
+    ImGui_ImplSDL2_InitForSDLRenderer(sdl_window_ptr, sdl_renderer_ptr);
+    ImGui_ImplSDLRenderer2_Init(sdl_renderer_ptr);
+
+    ImGui::StyleColorsDark();
 
     return true;
 }

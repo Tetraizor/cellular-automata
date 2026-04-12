@@ -19,8 +19,6 @@ void World::update()
     set_cell(previous_coords.first, previous_coords.second, 0, Utils::ColorUtils::to_argb8888(0, 0, 0, 255));
     set_cell(current_coords.first, current_coords.second, 0, Utils::ColorUtils::to_argb8888(255, 0, 0, 255));
 
-    std::cout << "At x: " << current_coords.first << ", y: " << current_coords.second << std::endl;
-
     current_position++;
 }
 

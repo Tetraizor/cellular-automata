@@ -1,5 +1,9 @@
 #include "renderer.h"
 
+#include <imgui.h>
+#include <imgui_impl_sdl2.h>
+#include <imgui_impl_sdlrenderer2.h>
+
 #include "engine.h"
 
 Renderer::Renderer() : world_ptr(nullptr), world_texture_ptr(nullptr), ui_texture_ptr(nullptr) {}
@@ -34,15 +38,27 @@ bool Renderer::initialize(int width, int height, const World *world_ptr, SDL_Ren
 
 void Renderer::render()
 {
-    if (world_texture_ptr == nullptr)
-        return;
+    // Initialization
+    ImGui_ImplSDLRenderer2_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+    ImGui::NewFrame();
 
     SDL_SetRenderDrawColor(sdl_renderer_ptr, 60, 60, 60, 255);
     SDL_RenderClear(sdl_renderer_ptr);
 
-    SDL_Rect src_rect;
+    // UI
+    ImGui::Begin("Engine Stats");
 
-    if (world_ptr != nullptr)
+    ImGui::Text("Hello!");
+    if (ImGui::Button("Button"))
+    {
+        std::cout << "Button pressed!" << std::endl;
+    }
+
+    ImGui::End();
+
+    // World
+    if (world_texture_ptr == nullptr || world_ptr != nullptr)
     {
         const uint32_t *world_colors = world_ptr->get_cell_colors();
 
@@ -54,6 +70,9 @@ void Renderer::render()
 
         SDL_RenderCopy(sdl_renderer_ptr, world_texture_ptr, NULL, NULL);
     }
+
+    ImGui::Render();
+    ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), sdl_renderer_ptr);
 
     SDL_RenderPresent(sdl_renderer_ptr);
 }
