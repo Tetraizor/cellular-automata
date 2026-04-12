@@ -11,8 +11,18 @@ WindowManager::~WindowManager()
     std::cout << "Closing window..." << std::endl;
 
     // Graceful exit
-    SDL_DestroyRenderer(sdl_renderer_ptr);
-    SDL_DestroyWindow(sdl_window_ptr);
+    if (sdl_renderer_ptr)
+    {
+        SDL_DestroyRenderer(sdl_renderer_ptr);
+        sdl_renderer_ptr = nullptr;
+    }
+
+    if (sdl_window_ptr)
+    {
+        SDL_DestroyWindow(sdl_window_ptr);
+        sdl_renderer_ptr = nullptr;
+    }
+
     SDL_Quit();
 }
 

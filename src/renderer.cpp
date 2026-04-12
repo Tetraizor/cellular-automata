@@ -6,6 +6,9 @@
 
 #include "engine.h"
 
+World *world = nullptr;
+InputManager *input_manager = nullptr;
+
 Renderer::Renderer() : world_ptr(nullptr), world_texture_ptr(nullptr), ui_texture_ptr(nullptr) {}
 
 void draw_diagnostics_ui()
@@ -25,6 +28,12 @@ void draw_diagnostics_ui()
     {
         int fps = Engine::get().get_current_fps();
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "FPS: %d", fps);
+
+        if (input_manager != nullptr)
+        {
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Mouse screen position: %d, %d", input_manager->get_cursor_x(), input_manager->get_cursor_y());
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Mouse cell position  : %d, %d", input_manager->get_cursor_x(), input_manager->get_cursor_y());
+        }
     }
     ImGui::End();
 }
@@ -59,6 +68,7 @@ bool Renderer::initialize(int width, int height, const World *world_ptr, SDL_Ren
 
 void Renderer::render()
 {
+
     // Initialization
     ImGui_ImplSDLRenderer2_NewFrame();
     ImGui_ImplSDL2_NewFrame();

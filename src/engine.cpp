@@ -6,7 +6,7 @@
 
 #include "world.h"
 
-Engine::Engine() : ticks(0), millis(0), is_running(true) {}
+Engine::Engine() : ticks(0), millis(0), is_running(true), return_code(0) {}
 Engine::~Engine() {}
 
 Engine &Engine::get()
@@ -19,7 +19,7 @@ int Engine::run()
 {
     std::cout << "Starting the engine..." << std::endl;
 
-    World world(WORLD_WIDTH, WORLD_HEIGHT);
+    world.initialize(WORLD_WIDTH, WORLD_HEIGHT);
 
     if (!wm.initialize(WORLD_WIDTH * ZOOM_FACTOR, WORLD_HEIGHT * ZOOM_FACTOR))
         return 1;
@@ -57,31 +57,17 @@ int Engine::run()
         millis += elapsed_ms;
         accumulator += elapsed_ms;
 
-        // TODO: Handle input
-
-        SDL_Event event;
-        while (SDL_PollEvent(&event))
-        {
-            ImGui_ImplSDL2_ProcessEvent(&event);
-
-            if (event.type == SDL_QUIT)
-            {
-                is_running = false;
-            }
-        }
+        input_manager.check_for_events();
 
         while (accumulator >= 1000.0 / FIXED_TICK_RATE)
         {
-            // TODO: Game logic
-
-            // TODO: Physics logic
-            world.update();
+            if (millis > 1000)
+                world.update();
 
             ticks++;
             accumulator -= 1000.0 / FIXED_TICK_RATE;
         }
 
-        // TODO: Rendering
         renderer.render();
 
         if (target_fps > 0)
@@ -128,4 +114,10 @@ int Engine::run()
     std::cout << "Total tick count: " << ticks << "\tTotal busy wait count: " << frame_counter << std::endl;
 
     return 0;
+}
+
+void Engine::quit(int return_code)
+{
+    Engine::return_code = return_code;
+    is_running = false;
 }
