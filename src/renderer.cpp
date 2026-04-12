@@ -8,6 +8,27 @@
 
 Renderer::Renderer() : world_ptr(nullptr), world_texture_ptr(nullptr), ui_texture_ptr(nullptr) {}
 
+void draw_diagnostics_ui()
+{
+    ImGuiWindowFlags overlay_flags = ImGuiWindowFlags_NoDecoration |
+                                     ImGuiWindowFlags_AlwaysAutoResize |
+                                     ImGuiWindowFlags_NoSavedSettings |
+                                     ImGuiWindowFlags_NoFocusOnAppearing |
+                                     ImGuiWindowFlags_NoNav |
+                                     ImGuiWindowFlags_NoMove |
+                                     ImGuiWindowFlags_NoBackground |
+                                     ImGuiWindowFlags_NoInputs;
+
+    ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f), ImGuiCond_Always);
+
+    if (ImGui::Begin("Stats", nullptr, overlay_flags))
+    {
+        int fps = Engine::get().get_current_fps();
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "FPS: %d", fps);
+    }
+    ImGui::End();
+}
+
 bool Renderer::initialize(int width, int height, const World *world_ptr, SDL_Renderer *sdl_renderer_ptr)
 {
     Renderer::width = width;
@@ -47,15 +68,7 @@ void Renderer::render()
     SDL_RenderClear(sdl_renderer_ptr);
 
     // UI
-    ImGui::Begin("Engine Stats");
-
-    ImGui::Text("Hello!");
-    if (ImGui::Button("Button"))
-    {
-        std::cout << "Button pressed!" << std::endl;
-    }
-
-    ImGui::End();
+    draw_diagnostics_ui();
 
     // World
     if (world_texture_ptr == nullptr || world_ptr != nullptr)

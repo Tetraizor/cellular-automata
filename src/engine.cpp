@@ -77,12 +77,12 @@ int Engine::run()
             // TODO: Physics logic
             world.update();
 
-            // TODO: Rendering
-            renderer.render();
-
             ticks++;
             accumulator -= 1000.0 / FIXED_TICK_RATE;
         }
+
+        // TODO: Rendering
+        renderer.render();
 
         if (target_fps > 0)
         {
