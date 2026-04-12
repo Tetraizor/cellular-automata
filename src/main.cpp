@@ -4,6 +4,6 @@
 // TODO: Separate SDL logic & game loop from main method
 int main(int arg, char *argv[])
 {
-    Engine engine;
+    Engine &engine = Engine::get();
     return engine.run();
 }

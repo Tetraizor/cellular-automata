@@ -9,6 +9,12 @@
 Engine::Engine() : ticks(0), millis(0), is_running(true) {}
 Engine::~Engine() {}
 
+Engine &Engine::get()
+{
+    static Engine instance;
+    return instance;
+}
+
 int Engine::run()
 {
     std::cout << "Starting the engine..." << std::endl;
