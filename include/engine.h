@@ -26,6 +26,9 @@ private:
     uint64_t ticks;
     double millis;
 
+    uint64_t target_fps = 144;
+    int current_fps = target_fps;
+
     bool is_running;
 
     WindowManager wm;

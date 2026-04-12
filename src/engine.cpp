@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <chrono>
+#include <imgui_impl_sdl2.h>
 
 #include "world.h"
 
@@ -24,12 +25,15 @@ int Engine::run()
 
     const double MAX_FRAME_TIME = 250.0; // For protection against sprial of death
     double accumulator = 0;
-    uint64_t loop_iteration_count = 0;
+    int frame_counter = 0;
+    double fps_accumulator = 0;
 
     auto previous_time = std::chrono::steady_clock::now();
 
     while (is_running)
     {
+        auto frame_start_time = std::chrono::steady_clock::now();
+
         // Main loop
         auto current_time = std::chrono::steady_clock::now();
         std::chrono::duration<double, std::milli> time_span = current_time - previous_time;
@@ -52,6 +56,8 @@ int Engine::run()
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
+            ImGui_ImplSDL2_ProcessEvent(&event);
+
             if (event.type == SDL_QUIT)
             {
                 is_running = false;
@@ -72,14 +78,48 @@ int Engine::run()
             accumulator -= 1000.0 / FIXED_TICK_RATE;
         }
 
-        SDL_Delay(1); // To prevent busy waiting to some degree, temporary fix until seperate logic/render threads
+        if (target_fps > 0)
+        {
+            double target_frame_ms = 1000.0 / target_fps;
 
-        loop_iteration_count++;
+            auto frame_end_time = std::chrono::steady_clock::now();
+            std::chrono::duration<double, std::milli> work_time = frame_end_time - frame_start_time;
+
+            double sleep_ms = target_frame_ms - work_time.count();
+
+            if (sleep_ms > 0)
+            {
+                if (sleep_ms > 1.5)
+                {
+                    SDL_Delay(static_cast<Uint32>(sleep_ms - 1.5));
+                }
+            }
+
+            while (true)
+            {
+                auto current_wait_time = std::chrono::steady_clock::now();
+                std::chrono::duration<double, std::milli> total_time = current_wait_time - frame_start_time;
+
+                if (total_time.count() >= target_frame_ms)
+                    break;
+            }
+        }
+
+        fps_accumulator += elapsed_ms;
+        frame_counter++;
+
+        if (fps_accumulator >= 1000.0)
+        {
+            target_fps = frame_counter;
+
+            fps_accumulator = 0;
+            frame_counter = 0;
+        }
     }
 
     std::cout << "Stopping the engine..." << std::endl;
     std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
-    std::cout << "Total tick count: " << ticks << "\tTotal busy wait count: " << loop_iteration_count << std::endl;
+    std::cout << "Total tick count: " << ticks << "\tTotal busy wait count: " << frame_counter << std::endl;
 
     return 0;
 }
