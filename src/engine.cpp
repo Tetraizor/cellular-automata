@@ -27,6 +27,8 @@ int Engine::run()
     if (!renderer.initialize(WORLD_WIDTH * ZOOM_FACTOR, WORLD_HEIGHT * ZOOM_FACTOR, &world, wm.get_sdl_renderer_ptr()))
         return 1;
 
+    ui_manager.initialize(WORLD_WIDTH * ZOOM_FACTOR, WORLD_HEIGHT * ZOOM_FACTOR, wm.get_sdl_renderer_ptr());
+
     // Initialize game loop
 
     const double MAX_FRAME_TIME = 250.0; // For protection against sprial of death
@@ -61,9 +63,7 @@ int Engine::run()
 
         while (accumulator >= 1000.0 / FIXED_TICK_RATE)
         {
-            if (millis > 1000)
-                world.update();
-
+            world.update();
             ticks++;
             accumulator -= 1000.0 / FIXED_TICK_RATE;
         }

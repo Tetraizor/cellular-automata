@@ -1,5 +1,6 @@
 #pragma once
 #include <SDL2/SDL.h>
+#include <SDL_ttf.h>
 #include <cstdint>
 #include <iostream>
 
@@ -9,7 +10,7 @@ class Renderer
 {
 public:
     Renderer();
-    ~Renderer() = default;
+    ~Renderer();
 
     void render();
 
@@ -26,7 +27,8 @@ private:
     std::vector<uint32_t> pixel_buffer;
 
     SDL_Texture *world_texture_ptr;
-    SDL_Texture *ui_texture_ptr;
 
     SDL_Renderer *sdl_renderer_ptr;
+
+    TTF_Font *debug_font;
 };

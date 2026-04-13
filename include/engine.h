@@ -4,6 +4,7 @@
 #include "window_manager.h"
 #include "renderer.h"
 #include "input_manager.h"
+#include "ui/ui_manager.h"
 
 const uint64_t FIXED_TICK_RATE = 144; // Per second
 
@@ -26,6 +27,7 @@ public:
     InputManager *get_input_manager() { return &input_manager; }
     Renderer *get_renderer() { return &renderer; }
     WindowManager *get_window_manager() { return &wm; }
+    UIManager *get_ui_manager() { return &ui_manager; }
 
     static const int WORLD_WIDTH = 600;
     static const int WORLD_HEIGHT = 400;
@@ -49,4 +51,5 @@ private:
     Renderer renderer;
     InputManager input_manager;
     World world;
+    UIManager ui_manager;
 };

@@ -6,10 +6,19 @@
 
 #include "engine.h"
 
-World *world = nullptr;
-InputManager *input_manager = nullptr;
+#include "ui/ui_panel.h"
+#include "ui/ui_label.h"
 
-Renderer::Renderer() : world_ptr(nullptr), world_texture_ptr(nullptr), ui_texture_ptr(nullptr) {}
+UIManager *ui_manager = nullptr;
+
+Renderer::Renderer() : world_ptr(nullptr), world_texture_ptr(nullptr), debug_font(nullptr) {}
+Renderer::~Renderer()
+{
+    if (debug_font)
+    {
+        TTF_CloseFont(debug_font);
+    }
+}
 
 void draw_diagnostics_ui()
 {
@@ -28,18 +37,36 @@ void draw_diagnostics_ui()
     {
         int fps = Engine::get().get_current_fps();
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "FPS: %d", fps);
-
-        if (input_manager != nullptr)
-        {
-            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Mouse screen position: %d, %d", input_manager->get_cursor_x(), input_manager->get_cursor_y());
-            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Mouse cell position  : %d, %d", input_manager->get_cursor_x(), input_manager->get_cursor_y());
-        }
     }
     ImGui::End();
 }
 
+void draw_ui(SDL_Renderer *sdl_renderer_ptr, int width, int height)
+{
+    ui_manager->render(sdl_renderer_ptr);
+}
+
 bool Renderer::initialize(int width, int height, const World *world_ptr, SDL_Renderer *sdl_renderer_ptr)
 {
+    if (TTF_Init() == -1)
+    {
+        SDL_Log("Font system failed to initialize: %s", TTF_GetError());
+    }
+
+    debug_font = TTF_OpenFont("assets/fonts/roboto.ttf", 16);
+    if (!debug_font)
+    {
+        SDL_Log("Font failed to load: %s", TTF_GetError());
+    }
+
+    ui_manager = Engine::get().get_ui_manager();
+
+    auto sidebar_panel = std::make_unique<UIPanel>(0, height - 100, width, height, 0xCC303030);
+    ui_manager->add_element(std::move(sidebar_panel));
+
+    auto title_label = std::make_unique<UILabel>(0, 0, debug_font, "Test", 0xFFFFFFFF);
+    ui_manager->add_element(std::move(title_label));
+
     Renderer::width = width;
     Renderer::height = height;
 
@@ -55,20 +82,11 @@ bool Renderer::initialize(int width, int height, const World *world_ptr, SDL_Ren
         SDL_TEXTUREACCESS_STREAMING,
         world_ptr->get_width(), world_ptr->get_height());
 
-    ui_texture_ptr = SDL_CreateTexture(
-        sdl_renderer_ptr,
-        SDL_PIXELFORMAT_ARGB8888,
-        SDL_TEXTUREACCESS_STREAMING,
-        width, height);
-
-    SDL_SetTextureBlendMode(ui_texture_ptr, SDL_BLENDMODE_BLEND);
-
     return true;
 }
 
 void Renderer::render()
 {
-
     // Initialization
     ImGui_ImplSDLRenderer2_NewFrame();
     ImGui_ImplSDL2_NewFrame();
@@ -76,9 +94,6 @@ void Renderer::render()
 
     SDL_SetRenderDrawColor(sdl_renderer_ptr, 60, 60, 60, 255);
     SDL_RenderClear(sdl_renderer_ptr);
-
-    // UI
-    draw_diagnostics_ui();
 
     // World
     if (world_texture_ptr == nullptr || world_ptr != nullptr)
@@ -93,6 +108,10 @@ void Renderer::render()
 
         SDL_RenderCopy(sdl_renderer_ptr, world_texture_ptr, NULL, NULL);
     }
+
+    // UI
+    draw_diagnostics_ui();
+    draw_ui(sdl_renderer_ptr, width, height);
 
     ImGui::Render();
     ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), sdl_renderer_ptr);
