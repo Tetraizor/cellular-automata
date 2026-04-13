@@ -5,7 +5,7 @@
 #include "renderer.h"
 #include "input_manager.h"
 
-const uint64_t FIXED_TICK_RATE = 60; // Per second
+const uint64_t FIXED_TICK_RATE = 144; // Per second
 
 class Engine
 {

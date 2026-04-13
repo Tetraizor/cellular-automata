@@ -73,7 +73,7 @@ void World::update()
         int cursor_x = im->get_cursor_x();
         int cursor_y = im->get_cursor_y();
 
-        int brush_radius = 100;
+        int brush_radius = 24;
 
         for (int y = cursor_y - brush_radius; y <= cursor_y + brush_radius; y++)
         {

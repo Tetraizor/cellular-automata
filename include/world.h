@@ -52,6 +52,8 @@ public:
     int coords_to_index(int x, int y) const;
     std::pair<int, int> index_to_coords(int index) const;
 
+    uint32_t rng_state = 11111111;
+
 private:
     int width;
     int height;

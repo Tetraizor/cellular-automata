@@ -6,6 +6,14 @@
 
 namespace Physics
 {
+    inline uint32_t fast_rand(uint32_t &state)
+    {
+        state ^= state << 13;
+        state ^= state >> 17;
+        state ^= state << 5;
+        return state;
+    }
+
     inline void update_powder(World &world, int x, int y)
     {
         if (world.get_cell_id(x, y + 1) == MaterialType::EMPTY)
@@ -14,7 +22,7 @@ namespace Physics
             return;
         }
 
-        int direction = (rand() % 2 == 0) ? 1 : -1;
+        int direction = (fast_rand(world.rng_state) & 1) ? 1 : -1;
 
         if (world.get_cell_id(x + direction, y + 1) == MaterialType::EMPTY)
         {
