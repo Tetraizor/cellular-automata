@@ -17,16 +17,6 @@ void World::initialize(int width, int height)
     World::flat_cell_color_list.resize(width * height);
 
     std::cout << "World is initialized with w: " << width << ", height: " << height << ", totaling to " << (width * height) << " cells." << std::endl;
-
-    for (int x = 30; x < 150; x++)
-    {
-        int height = 3 + (rand() % 10);
-
-        for (int y = 20; y >= 20 - height; y--)
-        {
-            set_cell(x, y, MaterialType::SAND);
-        }
-    }
 }
 
 void World::clear()

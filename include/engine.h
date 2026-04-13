@@ -16,7 +16,7 @@ public:
     Engine(const Engine &) = delete;
     Engine &operator=(const Engine &) = delete;
 
-    int run();
+    int run(int width = 600, int height = 400, int zoom_factor = 2);
     void quit(int return_code = 0);
 
     uint64_t get_ticks_passed() const { return ticks; };
@@ -29,10 +29,9 @@ public:
     WindowManager *get_window_manager() { return &wm; }
     UIManager *get_ui_manager() { return &ui_manager; }
 
-    static const int WORLD_WIDTH = 600;
-    static const int WORLD_HEIGHT = 400;
-
-    static const int ZOOM_FACTOR = 3;
+    int get_world_width() { return world_width; }
+    int get_world_height() { return world_height; }
+    int get_zoom_factor() { return zoom_factor; }
 
 private:
     Engine();
@@ -46,6 +45,10 @@ private:
 
     bool is_running;
     int return_code;
+
+    int world_height;
+    int world_width;
+    int zoom_factor;
 
     WindowManager wm;
     Renderer renderer;

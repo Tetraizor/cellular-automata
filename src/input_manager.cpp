@@ -75,6 +75,6 @@ void InputManager::handle_mouse_up()
 }
 void InputManager::handle_mouse_motion(int x, int y)
 {
-    cursor_x = x / Engine::ZOOM_FACTOR;
-    cursor_y = y / Engine::ZOOM_FACTOR;
+    cursor_x = x / Engine::get().get_zoom_factor();
+    cursor_y = y / Engine::get().get_zoom_factor();
 }

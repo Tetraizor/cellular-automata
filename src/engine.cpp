@@ -15,22 +15,33 @@ Engine &Engine::get()
     return instance;
 }
 
-int Engine::run()
+int Engine::run(int width, int height, int zoom_factor)
 {
     std::cout << "Starting the engine..." << std::endl;
 
-    world.initialize(WORLD_WIDTH, WORLD_HEIGHT);
+    Engine::world_width = std::max(width, 100);
+    Engine::world_height = std::max(height, 100);
+    Engine::zoom_factor = std::max(zoom_factor, 1);
 
-    if (!wm.initialize(WORLD_WIDTH * ZOOM_FACTOR, WORLD_HEIGHT * ZOOM_FACTOR))
+    int right_panel_width = 200;
+    int bottom_panel_height = 100;
+    int top_panel_height = 100;
+
+    int total_window_width = width + right_panel_width;
+    int total_window_height = height + bottom_panel_height + top_panel_height;
+
+    // Initialize systems
+    world.initialize(width, height);
+
+    if (!wm.initialize(total_window_width * zoom_factor, total_window_height * zoom_factor))
         return 1;
 
-    if (!renderer.initialize(WORLD_WIDTH * ZOOM_FACTOR, WORLD_HEIGHT * ZOOM_FACTOR, &world, wm.get_sdl_renderer_ptr()))
+    if (!renderer.initialize(total_window_width * zoom_factor, total_window_height * zoom_factor, &world, wm.get_sdl_renderer_ptr()))
         return 1;
 
-    ui_manager.initialize(WORLD_WIDTH * ZOOM_FACTOR, WORLD_HEIGHT * ZOOM_FACTOR, wm.get_sdl_renderer_ptr());
+    ui_manager.initialize(total_window_width, total_window_height, wm.get_sdl_renderer_ptr());
 
     // Initialize game loop
-
     const double MAX_FRAME_TIME = 250.0; // For protection against sprial of death
     double accumulator = 0;
     int frame_counter = 0;
