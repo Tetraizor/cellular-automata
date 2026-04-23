@@ -33,6 +33,9 @@ public:
     int get_world_height() { return world_height; }
     int get_zoom_factor() { return zoom_factor; }
 
+    uint8_t get_selected_material() const { return selected_material; }
+    void set_selected_material(uint8_t m) { selected_material = m; }
+
 private:
     Engine();
     ~Engine();
@@ -49,6 +52,7 @@ private:
     int world_height;
     int world_width;
     int zoom_factor;
+    uint8_t selected_material = 1; // defaults to SAND
 
     WindowManager wm;
     Renderer renderer;

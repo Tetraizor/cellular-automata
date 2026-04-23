@@ -4,6 +4,7 @@
 
 #include "ui/ui_panel.h"
 #include "ui/ui_label.h"
+#include "ui/ui_button.h"
 
 UIManager *ui_manager = nullptr;
 WindowManager *window_manager = nullptr;
@@ -48,6 +49,44 @@ bool Renderer::initialize(const World *world_ptr, SDL_Renderer *sdl_renderer_ptr
     auto fps_label = std::make_unique<UILabel>(0, 0, debug_font, "Test", 0xFFFFFFFF);
     fps_label_ptr = fps_label.get();
     ui_manager->add_element(std::move(fps_label));
+
+    // Right panel
+    UIRect right_panel = window_manager->get_right_panel_rect();
+    int zoom = window_manager->get_zoom_factor();
+    int rp_x = right_panel.x * zoom;
+    int rp_w = right_panel.width * zoom;
+
+    auto rp_bg = std::make_unique<UIPanel>(rp_x, 0, rp_w, height, 0xFF252525);
+    ui_manager->add_element(std::move(rp_bg));
+
+    struct MatDef { uint8_t type; const char *name; uint32_t color; };
+    MatDef materials[] = {
+        { MaterialType::SAND,  "Sand",  mat_colors[MaterialType::SAND]  },
+        { MaterialType::STONE, "Stone", mat_colors[MaterialType::STONE] },
+        { MaterialType::WATER, "Water", mat_colors[MaterialType::WATER] },
+        { MaterialType::GAS,   "Gas",   mat_colors[MaterialType::GAS]   },
+    };
+
+    int btn_margin = 8;
+    int btn_w = rp_w - btn_margin * 2;
+    int btn_h = 32;
+    int btn_gap = 6;
+    int btn_start_y = 50;
+
+    for (int i = 0; i < 4; ++i)
+    {
+        uint8_t mat_type = materials[i].type;
+        int bx = rp_x + btn_margin;
+        int by = btn_start_y + i * (btn_h + btn_gap);
+
+        auto btn = std::make_unique<UIButton>(
+            bx, by, btn_w, btn_h, zoom,
+            debug_font, materials[i].name, materials[i].color,
+            [mat_type]() { Engine::get().set_selected_material(mat_type); },
+            [mat_type]() { return Engine::get().get_selected_material() == mat_type; });
+
+        ui_manager->add_element(std::move(btn));
+    }
 
     Renderer::width = width;
     Renderer::height = height;

@@ -96,7 +96,7 @@ void World::update()
                     double distance = std::sqrt((xx * xx) + (yy * yy));
 
                     if (distance <= brush_radius && get_cell_id(x, y) == MaterialType::EMPTY)
-                        set_cell(x, y, MaterialType::SAND);
+                        set_cell(x, y, Engine::get().get_selected_material());
                 }
             }
         }

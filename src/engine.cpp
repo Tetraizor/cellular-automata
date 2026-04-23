@@ -71,6 +71,7 @@ int Engine::run(int width, int height, int zoom_factor)
             accumulator -= 1000.0 / FIXED_TICK_RATE;
         }
 
+        ui_manager.update(&input_manager);
         renderer.render();
 
         if (target_fps > 0)
