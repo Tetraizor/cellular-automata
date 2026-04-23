@@ -1,4 +1,6 @@
 #include <iostream>
+#include <string>
+
 #include "engine.h"
 
 // TODO: Separate SDL logic & game loop from main method
