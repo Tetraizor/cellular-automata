@@ -1,7 +1,5 @@
 #include "input_manager.h"
 
-#include <imgui_impl_sdl2.h>
-
 #include "engine.h"
 
 void InputManager::check_for_events()
@@ -9,7 +7,6 @@ void InputManager::check_for_events()
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
-        ImGui_ImplSDL2_ProcessEvent(&event);
         parse_input(&event);
     }
 }

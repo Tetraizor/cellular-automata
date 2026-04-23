@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "world.h"
+#include "ui/ui_core.h"
 
 class Renderer
 {
@@ -14,7 +15,7 @@ public:
 
     void render();
 
-    bool initialize(int width, int height, const World *world, SDL_Renderer *sdl_renderer_ptr);
+    bool initialize(const World *world, SDL_Renderer *sdl_renderer_ptr);
 
     const uint32_t *get_pixel_buffer() const;
 
@@ -27,7 +28,6 @@ private:
     std::vector<uint32_t> pixel_buffer;
 
     SDL_Texture *world_texture_ptr;
-
     SDL_Renderer *sdl_renderer_ptr;
 
     TTF_Font *debug_font;

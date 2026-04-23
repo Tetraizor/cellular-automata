@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <chrono>
-#include <imgui_impl_sdl2.h>
 
 #include "world.h"
 
@@ -23,23 +22,16 @@ int Engine::run(int width, int height, int zoom_factor)
     Engine::world_height = std::max(height, 100);
     Engine::zoom_factor = std::max(zoom_factor, 1);
 
-    int right_panel_width = 200;
-    int bottom_panel_height = 100;
-    int top_panel_height = 100;
-
-    int total_window_width = width + right_panel_width;
-    int total_window_height = height + bottom_panel_height + top_panel_height;
-
     // Initialize systems
     world.initialize(width, height);
 
-    if (!wm.initialize(total_window_width * zoom_factor, total_window_height * zoom_factor))
+    if (!wm.initialize())
         return 1;
 
-    if (!renderer.initialize(total_window_width * zoom_factor, total_window_height * zoom_factor, &world, wm.get_sdl_renderer_ptr()))
+    if (!renderer.initialize(&world, wm.get_sdl_renderer_ptr()))
         return 1;
 
-    ui_manager.initialize(total_window_width, total_window_height, wm.get_sdl_renderer_ptr());
+    ui_manager.initialize(wm.get_scaled_window_width(), wm.get_scaled_window_height(), wm.get_sdl_renderer_ptr());
 
     // Initialize game loop
     const double MAX_FRAME_TIME = 250.0; // For protection against sprial of death
@@ -113,7 +105,7 @@ int Engine::run(int width, int height, int zoom_factor)
 
         if (fps_accumulator >= 1000.0)
         {
-            target_fps = frame_counter;
+            current_fps = frame_counter;
 
             fps_accumulator = 0;
             frame_counter = 0;

@@ -2,6 +2,3 @@
 build/
 out/
 .vscode/
-
-# ImGui
-**/imgui.ini

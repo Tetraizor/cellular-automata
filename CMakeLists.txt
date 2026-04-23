@@ -21,33 +21,13 @@ INCLUDE(FetchContent)
 FIND_PACKAGE(SDL2 REQUIRED)
 FIND_PACKAGE(SDL2_ttf REQUIRED)
 
-# Dear ImGui
-FetchContent_Declare(
-    imgui
-    GIT_REPOSITORY  https://github.com/ocornut/imgui.git
-    GIT_TAG         v1.91.8-docking
-)
-FetchContent_MakeAvailable(imgui)
-
-
 # ---- SOURCE FILES ----
 
 FILE(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 
-SET(IMGUI_SOURCES
-    ${imgui_SOURCE_DIR}/imgui.cpp
-    ${imgui_SOURCE_DIR}/imgui_draw.cpp
-    ${imgui_SOURCE_DIR}/imgui_widgets.cpp
-    ${imgui_SOURCE_DIR}/imgui_tables.cpp
-    ${imgui_SOURCE_DIR}/imgui_demo.cpp
-    ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl2.cpp
-    ${imgui_SOURCE_DIR}/backends/imgui_impl_sdlrenderer2.cpp
-)
-
-
 # ---- BUILD TARGETS ----
 
-ADD_EXECUTABLE(${PROJECT_NAME} ${SOURCES} ${IMGUI_SOURCES})
+ADD_EXECUTABLE(${PROJECT_NAME} ${SOURCES})
 
 
 # ---- CONFIGS & DEFINES ----
@@ -64,8 +44,6 @@ endif()
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PRIVATE
     include
     ${SDL2_INCLUDE_DIRS}
-    ${imgui_SOURCE_DIR}
-    ${imgui_SOURCE_DIR}/backends
 )
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE

@@ -1,15 +1,14 @@
 #include "renderer.h"
 
-#include <imgui.h>
-#include <imgui_impl_sdl2.h>
-#include <imgui_impl_sdlrenderer2.h>
-
 #include "engine.h"
 
 #include "ui/ui_panel.h"
 #include "ui/ui_label.h"
 
 UIManager *ui_manager = nullptr;
+WindowManager *window_manager = nullptr;
+
+UILabel *fps_label_ptr = nullptr;
 
 Renderer::Renderer() : world_ptr(nullptr), world_texture_ptr(nullptr), debug_font(nullptr) {}
 Renderer::~Renderer()
@@ -20,33 +19,14 @@ Renderer::~Renderer()
     }
 }
 
-void draw_diagnostics_ui()
-{
-    ImGuiWindowFlags overlay_flags = ImGuiWindowFlags_NoDecoration |
-                                     ImGuiWindowFlags_AlwaysAutoResize |
-                                     ImGuiWindowFlags_NoSavedSettings |
-                                     ImGuiWindowFlags_NoFocusOnAppearing |
-                                     ImGuiWindowFlags_NoNav |
-                                     ImGuiWindowFlags_NoMove |
-                                     ImGuiWindowFlags_NoBackground |
-                                     ImGuiWindowFlags_NoInputs;
-
-    ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f), ImGuiCond_Always);
-
-    if (ImGui::Begin("Stats", nullptr, overlay_flags))
-    {
-        int fps = Engine::get().get_current_fps();
-        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "FPS: %d", fps);
-    }
-    ImGui::End();
-}
-
 void draw_ui(SDL_Renderer *sdl_renderer_ptr, int width, int height)
 {
+    fps_label_ptr->set_text(std::to_string(Engine::get().get_current_fps()));
+
     ui_manager->render(sdl_renderer_ptr);
 }
 
-bool Renderer::initialize(int width, int height, const World *world_ptr, SDL_Renderer *sdl_renderer_ptr)
+bool Renderer::initialize(const World *world_ptr, SDL_Renderer *sdl_renderer_ptr)
 {
     if (TTF_Init() == -1)
     {
@@ -59,13 +39,15 @@ bool Renderer::initialize(int width, int height, const World *world_ptr, SDL_Ren
         SDL_Log("Font failed to load: %s", TTF_GetError());
     }
 
+    window_manager = Engine::get().get_window_manager();
     ui_manager = Engine::get().get_ui_manager();
 
     auto sidebar_panel = std::make_unique<UIPanel>(0, height - 100, width, height, 0xCC303030);
     ui_manager->add_element(std::move(sidebar_panel));
 
-    auto title_label = std::make_unique<UILabel>(0, 0, debug_font, "Test", 0xFFFFFFFF);
-    ui_manager->add_element(std::move(title_label));
+    auto fps_label = std::make_unique<UILabel>(0, 0, debug_font, "Test", 0xFFFFFFFF);
+    fps_label_ptr = fps_label.get();
+    ui_manager->add_element(std::move(fps_label));
 
     Renderer::width = width;
     Renderer::height = height;
@@ -88,10 +70,6 @@ bool Renderer::initialize(int width, int height, const World *world_ptr, SDL_Ren
 void Renderer::render()
 {
     // Initialization
-    ImGui_ImplSDLRenderer2_NewFrame();
-    ImGui_ImplSDL2_NewFrame();
-    ImGui::NewFrame();
-
     SDL_SetRenderDrawColor(sdl_renderer_ptr, 60, 60, 60, 255);
     SDL_RenderClear(sdl_renderer_ptr);
 
@@ -106,15 +84,20 @@ void Renderer::render()
             world_ptr->get_cell_colors(),
             world_ptr->get_width() * sizeof(uint32_t));
 
-        SDL_RenderCopy(sdl_renderer_ptr, world_texture_ptr, NULL, NULL);
+        UIRect world_rect = window_manager->get_world_rect();
+        int zoom_factor = window_manager->get_zoom_factor();
+
+        SDL_Rect sdl_world_rect;
+        sdl_world_rect.x = world_rect.x * zoom_factor;
+        sdl_world_rect.y = world_rect.y * zoom_factor;
+        sdl_world_rect.w = world_rect.width * zoom_factor;
+        sdl_world_rect.h = world_rect.height * zoom_factor;
+
+        SDL_RenderCopy(sdl_renderer_ptr, world_texture_ptr, NULL, &sdl_world_rect);
     }
 
     // UI
-    draw_diagnostics_ui();
     draw_ui(sdl_renderer_ptr, width, height);
-
-    ImGui::Render();
-    ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), sdl_renderer_ptr);
 
     SDL_RenderPresent(sdl_renderer_ptr);
 }

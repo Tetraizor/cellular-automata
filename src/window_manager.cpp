@@ -2,9 +2,7 @@
 
 #include <iostream>
 
-#include <imgui.h>
-#include <imgui_impl_sdl2.h>
-#include <imgui_impl_sdlrenderer2.h>
+#include "engine.h"
 
 WindowManager::~WindowManager()
 {
@@ -26,10 +24,38 @@ WindowManager::~WindowManager()
     SDL_Quit();
 }
 
-bool WindowManager::initialize(int width, int height)
+bool WindowManager::initialize()
 {
-    WindowManager::width = width;
-    WindowManager::height = height;
+    int right_panel_width = 120;
+    int bottom_panel_height = 40;
+    int top_panel_height = 40;
+
+    int world_width = Engine::get().get_world_width();
+    int world_height = Engine::get().get_world_height();
+
+    WindowManager::zoom_factor = Engine::get().get_zoom_factor();
+    WindowManager::unscaled_window_width = (world_width + right_panel_width);
+    WindowManager::unscaled_window_height = (world_height + bottom_panel_height + top_panel_height);
+
+    top_panel_rect.x = 0;
+    top_panel_rect.y = 0;
+    top_panel_rect.width = unscaled_window_width;
+    top_panel_rect.height = top_panel_height;
+
+    bottom_panel_rect.x = 0;
+    bottom_panel_rect.y = 0;
+    bottom_panel_rect.width = world_width;
+    bottom_panel_rect.height = bottom_panel_height;
+
+    right_panel_rect.x = world_width;
+    right_panel_rect.y = 0;
+    right_panel_rect.width = right_panel_width;
+    right_panel_rect.height = unscaled_window_height;
+
+    world_rect.x = 0;
+    world_rect.y = top_panel_height;
+    world_rect.width = world_width;
+    world_rect.height = world_height;
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
@@ -47,8 +73,8 @@ bool WindowManager::initialize(int width, int height)
         window_title,
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        width,
-        height,
+        get_scaled_window_width(),
+        get_scaled_window_height(),
         SDL_WINDOW_SHOWN);
 
     if (!sdl_window_ptr)
@@ -69,16 +95,6 @@ bool WindowManager::initialize(int width, int height)
         SDL_Quit();
         return false;
     }
-
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
-    (void)io;
-
-    ImGui_ImplSDL2_InitForSDLRenderer(sdl_window_ptr, sdl_renderer_ptr);
-    ImGui_ImplSDLRenderer2_Init(sdl_renderer_ptr);
-
-    ImGui::StyleColorsDark();
 
     return true;
 }
