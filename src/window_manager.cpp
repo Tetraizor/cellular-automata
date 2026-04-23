@@ -27,8 +27,8 @@ WindowManager::~WindowManager()
 bool WindowManager::initialize()
 {
     int right_panel_width = 120;
-    int bottom_panel_height = 40;
-    int top_panel_height = 40;
+    int bottom_panel_height = 0;
+    int top_panel_height = 0;
 
     int world_width = Engine::get().get_world_width();
     int world_height = Engine::get().get_world_height();
@@ -43,7 +43,7 @@ bool WindowManager::initialize()
     top_panel_rect.height = top_panel_height;
 
     bottom_panel_rect.x = 0;
-    bottom_panel_rect.y = 0;
+    bottom_panel_rect.y = top_panel_height + world_height;
     bottom_panel_rect.width = world_width;
     bottom_panel_rect.height = bottom_panel_height;
 
@@ -83,6 +83,8 @@ bool WindowManager::initialize()
         SDL_Quit();
         return false;
     }
+
+    SDL_ShowCursor(SDL_DISABLE);
 
     sdl_renderer_ptr = SDL_CreateRenderer(
         sdl_window_ptr,

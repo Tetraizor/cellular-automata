@@ -9,7 +9,7 @@ class UILabel : public UIElement
 public:
     UILabel(int x, int y, TTF_Font *font, const std::string &text, uint32_t color) : UIElement(x, y, 0, 0), font(font), text(text), color(color)
     {
-        TTF_SizeText(font, text.c_str(), &bounds.width, &bounds.height);
+        TTF_SizeUTF8(font, text.c_str(), &bounds.width, &bounds.height);
     }
 
     void update(InputManager *input) override {};
@@ -18,7 +18,7 @@ public:
         if (text != new_text)
         {
             text = new_text;
-            TTF_SizeText(font, text.c_str(), &bounds.width, &bounds.height);
+            TTF_SizeUTF8(font, text.c_str(), &bounds.width, &bounds.height);
             mark_dirty();
         }
     }
@@ -34,7 +34,7 @@ public:
         sdl_color.g = (color & 0x0000FF00) >> 8;
         sdl_color.b = (color & 0x000000FF);
 
-        SDL_Surface *text_surf = TTF_RenderText_Blended(font, text.c_str(), sdl_color);
+        SDL_Surface *text_surf = TTF_RenderUTF8_Blended(font, text.c_str(), sdl_color);
         if (!text_surf)
             return;
 

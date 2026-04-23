@@ -18,14 +18,6 @@ namespace Physics
         return world.get_cell_id(x, y) == MaterialType::EMPTY;
     }
 
-    inline void swap_cells(World &world, int x1, int y1, int x2, int y2)
-    {
-        uint8_t id1 = world.get_cell_id(x1, y1);
-        uint8_t id2 = world.get_cell_id(x2, y2);
-        world.set_cell(x1, y1, id2);
-        world.set_cell(x2, y2, id1);
-    }
-
     inline uint32_t fast_rand(uint32_t &state)
     {
         state ^= state << 13;
@@ -64,14 +56,14 @@ namespace Physics
 
         if (is_in_bounds(world, x, y + 1) && world.get_cell_id(x, y + 1) == MaterialType::WATER)
         {
-            swap_cells(world, x, y, x, y + 1);
+            world.swap_cells(x, y, x, y + 1);
             mark_updated(world, x, y + 1);
             return;
         }
 
         if (is_in_bounds(world, x, y + 1) && world.get_cell_id(x, y + 1) == MaterialType::GAS)
         {
-            swap_cells(world, x, y, x, y + 1);
+            world.swap_cells(x, y, x, y + 1);
             mark_updated(world, x, y + 1);
             return;
         }
@@ -87,7 +79,7 @@ namespace Physics
 
         if (is_in_bounds(world, x + direction, y + 1) && world.get_cell_id(x + direction, y + 1) == MaterialType::GAS)
         {
-            swap_cells(world, x, y, x + direction, y + 1);
+            world.swap_cells(x, y, x + direction, y + 1);
             mark_updated(world, x + direction, y + 1);
             return;
         }
@@ -101,7 +93,7 @@ namespace Physics
 
         if (is_in_bounds(world, x - direction, y + 1) && world.get_cell_id(x - direction, y + 1) == MaterialType::GAS)
         {
-            swap_cells(world, x, y, x - direction, y + 1);
+            world.swap_cells(x, y, x - direction, y + 1);
             mark_updated(world, x - direction, y + 1);
             return;
         }
@@ -121,7 +113,7 @@ namespace Physics
 
         if (is_in_bounds(world, x, y + 1) && world.get_cell_id(x, y + 1) == MaterialType::GAS)
         {
-            swap_cells(world, x, y, x, y + 1);
+            world.swap_cells(x, y, x, y + 1);
             mark_updated(world, x, y + 1);
             return;
         }
@@ -137,7 +129,7 @@ namespace Physics
 
         if (is_in_bounds(world, x + spread_direction, y + 1) && world.get_cell_id(x + spread_direction, y + 1) == MaterialType::GAS)
         {
-            swap_cells(world, x, y, x + spread_direction, y + 1);
+            world.swap_cells(x, y, x + spread_direction, y + 1);
             mark_updated(world, x + spread_direction, y + 1);
             return;
         }
@@ -151,7 +143,7 @@ namespace Physics
 
         if (is_in_bounds(world, x - spread_direction, y + 1) && world.get_cell_id(x - spread_direction, y + 1) == MaterialType::GAS)
         {
-            swap_cells(world, x, y, x - spread_direction, y + 1);
+            world.swap_cells(x, y, x - spread_direction, y + 1);
             mark_updated(world, x - spread_direction, y + 1);
             return;
         }
@@ -224,7 +216,7 @@ namespace Physics
 
             if (is_in_bounds(world, new_x, new_y) && world.get_cell_id(new_x, new_y) == MaterialType::WATER)
             {
-                swap_cells(world, x, y, new_x, new_y);
+                world.swap_cells(x, y, new_x, new_y);
                 mark_updated(world, new_x, new_y);
                 return;
             }

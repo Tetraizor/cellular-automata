@@ -28,17 +28,21 @@ public:
             mark_dirty();
         }
 
-        bool is_down = input->get_is_cursor_down();
-        if (is_down && !prev_down)
+        int mx = input->get_cursor_x() * zoom;
+        int my = input->get_cursor_y() * zoom;
+        bool hovered = mx >= bounds.x && mx < bounds.x + bounds.width &&
+                       my >= bounds.y && my < bounds.y + bounds.height;
+        if (hovered != is_hovered)
         {
-            int mx = input->get_cursor_x() * zoom;
-            int my = input->get_cursor_y() * zoom;
-            if (mx >= bounds.x && mx < bounds.x + bounds.width &&
-                my >= bounds.y && my < bounds.y + bounds.height)
-            {
-                on_click();
-                mark_dirty();
-            }
+            is_hovered = hovered;
+            mark_dirty();
+        }
+
+        bool is_down = input->get_is_cursor_down();
+        if (is_down && !prev_down && hovered)
+        {
+            on_click();
+            mark_dirty();
         }
         prev_down = is_down;
     }
@@ -48,7 +52,7 @@ public:
         int buffer_height = pixel_buffer.size() / buffer_width;
         bool selected = is_selected_fn();
 
-        uint32_t bg = selected ? 0xFF505070 : 0xFF383838;
+        uint32_t bg = selected ? 0xFF505070 : (is_hovered ? 0xFF484848 : 0xFF383838);
         Utils::DrawUtils::draw_fill_rect(pixel_buffer, buffer_width, buffer_height, bounds, bg);
 
         int pad = 6;
@@ -96,4 +100,5 @@ private:
     std::function<bool()> is_selected_fn;
     bool prev_down = false;
     bool was_selected = false;
+    bool is_hovered = false;
 };

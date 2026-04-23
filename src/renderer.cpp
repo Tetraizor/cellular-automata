@@ -56,7 +56,7 @@ static void draw_circle(SDL_Renderer *renderer, int cx, int cy, int radius)
 
 void draw_ui(SDL_Renderer *sdl_renderer_ptr, int width, int height)
 {
-    fps_label_ptr->set_text(std::to_string(Engine::get().get_current_fps()));
+    fps_label_ptr->set_text("FPS: " + std::to_string(Engine::get().get_current_fps()));
 
     ui_manager->render(sdl_renderer_ptr);
 }
@@ -68,7 +68,7 @@ bool Renderer::initialize(const World *world_ptr, SDL_Renderer *sdl_renderer_ptr
         SDL_Log("Font system failed to initialize: %s", TTF_GetError());
     }
 
-    debug_font = TTF_OpenFont("assets/fonts/roboto.ttf", 16);
+    debug_font = TTF_OpenFont("assets/fonts/pixel_font.ttf", 32);
     if (!debug_font)
     {
         SDL_Log("Font failed to load: %s", TTF_GetError());
@@ -80,7 +80,7 @@ bool Renderer::initialize(const World *world_ptr, SDL_Renderer *sdl_renderer_ptr
     auto sidebar_panel = std::make_unique<UIPanel>(0, height - 100, width, height, 0xCC303030);
     ui_manager->add_element(std::move(sidebar_panel));
 
-    auto fps_label = std::make_unique<UILabel>(0, 0, debug_font, "Test", 0xFFFFFFFF);
+    auto fps_label = std::make_unique<UILabel>(20, 12, debug_font, "FPS: 0", 0xFFFFFFFF);
     fps_label_ptr = fps_label.get();
     ui_manager->add_element(std::move(fps_label));
 
@@ -102,15 +102,20 @@ bool Renderer::initialize(const World *world_ptr, SDL_Renderer *sdl_renderer_ptr
     auto mat_label = std::make_unique<UILabel>(rp_x + btn_margin, 14, debug_font, "Material", 0xFFAAAAAA);
     ui_manager->add_element(std::move(mat_label));
 
-    struct MatDef { uint8_t type; const char *name; uint32_t color; };
+    struct MatDef
+    {
+        uint8_t type;
+        const char *name;
+        uint32_t color;
+    };
     MatDef materials[] = {
-        { MaterialType::SAND,  "Sand",  mat_colors[MaterialType::SAND]  },
-        { MaterialType::STONE, "Stone", mat_colors[MaterialType::STONE] },
-        { MaterialType::WATER, "Water", mat_colors[MaterialType::WATER] },
-        { MaterialType::GAS,   "Gas",   mat_colors[MaterialType::GAS]   },
+        {MaterialType::SAND, "Sand", mat_colors[MaterialType::SAND]},
+        {MaterialType::STONE, "Stone", mat_colors[MaterialType::STONE]},
+        {MaterialType::WATER, "Water", mat_colors[MaterialType::WATER]},
+        {MaterialType::GAS, "Gas", mat_colors[MaterialType::GAS]},
     };
 
-    int mat_start_y = 38;
+    int mat_start_y = 46;
     for (int i = 0; i < 4; ++i)
     {
         uint8_t mat_type = materials[i].type;
@@ -120,8 +125,10 @@ bool Renderer::initialize(const World *world_ptr, SDL_Renderer *sdl_renderer_ptr
         auto btn = std::make_unique<UIButton>(
             bx, by, btn_w, btn_h, zoom,
             debug_font, materials[i].name, materials[i].color,
-            [mat_type]() { Engine::get().set_selected_material(mat_type); },
-            [mat_type]() { return Engine::get().get_selected_material() == mat_type; });
+            [mat_type]()
+            { Engine::get().set_selected_material(mat_type); },
+            [mat_type]()
+            { return Engine::get().get_selected_material() == mat_type; });
 
         ui_manager->add_element(std::move(btn));
     }
@@ -131,15 +138,19 @@ bool Renderer::initialize(const World *world_ptr, SDL_Renderer *sdl_renderer_ptr
     auto brush_label = std::make_unique<UILabel>(rp_x + btn_margin, brush_section_y, debug_font, "Brush Size", 0xFFAAAAAA);
     ui_manager->add_element(std::move(brush_label));
 
-    struct BrushDef { int radius; const char *name; };
+    struct BrushDef
+    {
+        int radius;
+        const char *name;
+    };
     BrushDef brushes[] = {
-        {  6, "Small"   },
-        { 16, "Medium"  },
-        { 24, "Large"   },
-        { 48, "X-Large" },
+        {6, "Small"},
+        {16, "Medium"},
+        {24, "Large"},
+        {48, "X-Large"},
     };
 
-    int brush_start_y = brush_section_y + 24;
+    int brush_start_y = brush_section_y + 32;
     for (int i = 0; i < 4; ++i)
     {
         int radius = brushes[i].radius;
@@ -149,11 +160,33 @@ bool Renderer::initialize(const World *world_ptr, SDL_Renderer *sdl_renderer_ptr
         auto btn = std::make_unique<UIButton>(
             bx, by, btn_w, btn_h, zoom,
             debug_font, brushes[i].name, 0xFF606060,
-            [radius]() { Engine::get().set_brush_radius(radius); },
-            [radius]() { return Engine::get().get_brush_radius() == radius; });
+            [radius]()
+            { Engine::get().set_brush_radius(radius); },
+            [radius]()
+            { return Engine::get().get_brush_radius() == radius; });
 
         ui_manager->add_element(std::move(btn));
     }
+
+    UIRect divider = {rp_x + btn_margin, 410, btn_w, 2};
+    auto divider_panel = std::make_unique<UIPanel>(divider.x, divider.y, divider.width, divider.height, 0x55FFFFFF);
+    ui_manager->add_element(std::move(divider_panel));
+
+    // Controls section
+    int info_x = rp_x + btn_margin;
+    int ctrl_y = 420;
+    auto ctrl_label = std::make_unique<UILabel>(info_x, ctrl_y, debug_font, "Controls", 0xFFAAAAAA);
+    ui_manager->add_element(std::move(ctrl_label));
+    auto lmb_label = std::make_unique<UILabel>(info_x, ctrl_y + 28, debug_font, "LMB: Place", 0xFF888888);
+    ui_manager->add_element(std::move(lmb_label));
+    auto rmb_label = std::make_unique<UILabel>(info_x, ctrl_y + 56, debug_font, "RMB: Erase", 0xFF888888);
+    ui_manager->add_element(std::move(rmb_label));
+    // Credit
+
+    auto credit_label = std::make_unique<UILabel>(info_x, ctrl_y + 326, debug_font, "Umuthan Özel @ 2026", 0xFF555555);
+    ui_manager->add_element(std::move(credit_label));
+    credit_label = std::make_unique<UILabel>(info_x, ctrl_y + 350, debug_font, "Cellular Automata v0.1", 0xFF555555);
+    ui_manager->add_element(std::move(credit_label));
 
     Renderer::width = width;
     Renderer::height = height;
@@ -208,14 +241,30 @@ void Renderer::render()
     // Cursor circle
     InputManager *im = Engine::get().get_input_manager();
     int zoom_factor = window_manager->get_zoom_factor();
-    int cx = im->get_cursor_x() * zoom_factor;
-    int cy = im->get_cursor_y() * zoom_factor;
-    int cr = Engine::get().get_brush_radius() * zoom_factor;
+    int cursor_x = im->get_cursor_x();
+    int cursor_y = im->get_cursor_y();
+    UIRect world_rect = window_manager->get_world_rect();
 
-    SDL_SetRenderDrawBlendMode(sdl_renderer_ptr, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor(sdl_renderer_ptr, 255, 255, 255, 180);
-    draw_circle(sdl_renderer_ptr, cx, cy, cr);
-    SDL_SetRenderDrawBlendMode(sdl_renderer_ptr, SDL_BLENDMODE_NONE);
+    bool on_canvas = cursor_x >= world_rect.x &&
+                     cursor_x < world_rect.x + world_rect.width &&
+                     cursor_y >= world_rect.y &&
+                     cursor_y < world_rect.y + world_rect.height;
+
+    if (on_canvas)
+    {
+        SDL_ShowCursor(SDL_DISABLE);
+        int cx = cursor_x * zoom_factor;
+        int cy = cursor_y * zoom_factor;
+        int cr = Engine::get().get_brush_radius() * zoom_factor;
+        SDL_SetRenderDrawBlendMode(sdl_renderer_ptr, SDL_BLENDMODE_BLEND);
+        SDL_SetRenderDrawColor(sdl_renderer_ptr, 255, 255, 255, 180);
+        draw_circle(sdl_renderer_ptr, cx, cy, cr);
+        SDL_SetRenderDrawBlendMode(sdl_renderer_ptr, SDL_BLENDMODE_NONE);
+    }
+    else
+    {
+        SDL_ShowCursor(SDL_ENABLE);
+    }
 
     SDL_RenderPresent(sdl_renderer_ptr);
 }

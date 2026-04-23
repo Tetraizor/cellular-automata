@@ -6,6 +6,26 @@
 #include <cmath>
 #include <chrono>
 
+static uint32_t vary_color(uint32_t base, uint8_t variance, uint32_t &rng)
+{
+    if (variance == 0) return base;
+
+    rng ^= rng << 13;
+    rng ^= rng >> 17;
+    rng ^= rng << 5;
+
+    int v = variance;
+    int rn = (int)((rng & 0xFF)        % (2 * v + 1)) - v;
+    int gn = (int)(((rng >> 8) & 0xFF) % (2 * v + 1)) - v;
+    int bn = (int)(((rng >>16) & 0xFF) % (2 * v + 1)) - v;
+
+    int r = std::max(0, std::min(255, (int)((base >> 16) & 0xFF) + rn));
+    int g = std::max(0, std::min(255, (int)((base >>  8) & 0xFF) + gn));
+    int b = std::max(0, std::min(255, (int)( base        & 0xFF) + bn));
+
+    return (0xFF << 24) | (r << 16) | (g << 8) | b;
+}
+
 #include "utils/color_utils.h"
 #include "physics.h"
 #include "engine.h"
@@ -132,6 +152,35 @@ void World::update()
             }
         }
     }
+
+    // Animate water: write a slowly-scrolling brightness wave so settled
+    // water shimmers rather than looking like static powder.
+    {
+        uint32_t base = mat_colors[MaterialType::WATER];
+        int base_r = (base >> 16) & 0xFF;
+        int base_g = (base >>  8) & 0xFF;
+        int base_b =  base        & 0xFF;
+        int t = (int)(frame_count >> 2); // changes every 4 ticks (~36 hz)
+
+        for (int i = 0; i < width * height; ++i)
+        {
+            if (grid[i].id != MaterialType::WATER)
+                continue;
+
+            int x = i % width;
+            int y = i / width;
+
+            // Diagonal spatial phase + slow time → travelling wave
+            int phase = (x * 3 + y * 7) & 0x3F;
+            int wave  = (phase + t) & 0x3F;
+            int brightness = (wave < 32 ? wave : 64 - wave) / 4 - 4; // -4..+4
+
+            int r = std::max(0, std::min(255, base_r + brightness));
+            int g = std::max(0, std::min(255, base_g + brightness));
+            int b = std::max(0, std::min(255, base_b + brightness));
+            flat_cell_color_list[i] = (0xFF << 24) | (r << 16) | (g << 8) | b;
+        }
+    }
 }
 
 const uint32_t *World::get_cell_colors() const
@@ -142,11 +191,8 @@ const uint32_t *World::get_cell_colors() const
 void World::set_cell(int x, int y, uint8_t new_id)
 {
     int index = coords_to_index(x, y);
-    uint32_t new_color = mat_colors[new_id];
-
     grid[index].id = new_id;
-
-    World::flat_cell_color_list[index] = new_color;
+    flat_cell_color_list[index] = vary_color(mat_colors[new_id], mat_variance[new_id], rng_state);
 }
 
 int World::coords_to_index(int x, int y) const
@@ -175,12 +221,20 @@ void World::move_cell(int x1, int y1, int x2, int y2)
     int idx1 = coords_to_index(x1, y1);
     int idx2 = coords_to_index(x2, y2);
 
-    uint8_t id = grid[idx1].id;
-    grid[idx1].id = MaterialType::EMPTY;
-    grid[idx2].id = id;
+    grid[idx2].id            = grid[idx1].id;
+    flat_cell_color_list[idx2] = flat_cell_color_list[idx1]; // preserve varied color
 
+    grid[idx1].id            = MaterialType::EMPTY;
     flat_cell_color_list[idx1] = mat_colors[MaterialType::EMPTY];
-    flat_cell_color_list[idx2] = mat_colors[id];
+}
+
+void World::swap_cells(int x1, int y1, int x2, int y2)
+{
+    int idx1 = coords_to_index(x1, y1);
+    int idx2 = coords_to_index(x2, y2);
+
+    std::swap(grid[idx1].id,              grid[idx2].id);
+    std::swap(flat_cell_color_list[idx1], flat_cell_color_list[idx2]);
 }
 
 const Cell &World::get_cell(int x, int y) const
