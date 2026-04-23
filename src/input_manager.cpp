@@ -28,11 +28,11 @@ void InputManager::parse_input(const SDL_Event *event)
         break;
 
     case SDL_MOUSEBUTTONDOWN:
-        handle_mouse_down();
+        handle_mouse_down(event);
         break;
 
     case SDL_MOUSEBUTTONUP:
-        handle_mouse_up();
+        handle_mouse_up(event);
         break;
 
     case SDL_MOUSEMOTION:
@@ -62,13 +62,19 @@ void InputManager::handle_key(const SDL_Event *key_event, bool is_down)
     }
 }
 
-void InputManager::handle_mouse_down()
+void InputManager::handle_mouse_down(const SDL_Event *event)
 {
-    is_cursor_down = true;
+    if (event->button.button == SDL_BUTTON_LEFT)
+        is_cursor_down = true;
+    else if (event->button.button == SDL_BUTTON_RIGHT)
+        is_right_cursor_down = true;
 }
-void InputManager::handle_mouse_up()
+void InputManager::handle_mouse_up(const SDL_Event *event)
 {
-    is_cursor_down = false;
+    if (event->button.button == SDL_BUTTON_LEFT)
+        is_cursor_down = false;
+    else if (event->button.button == SDL_BUTTON_RIGHT)
+        is_right_cursor_down = false;
 }
 void InputManager::handle_mouse_motion(int x, int y)
 {

@@ -75,7 +75,10 @@ void World::update()
     InputManager *im = Engine::get().get_input_manager();
 
     auto brush_start = std::chrono::high_resolution_clock::now();
-    if (im->get_is_cursor_down())
+    bool placing = im->get_is_cursor_down();
+    bool erasing = im->get_is_right_cursor_down();
+
+    if (placing || erasing)
     {
         int cursor_x = im->get_cursor_x();
         int cursor_y = im->get_cursor_y() - wm->get_top_panel_rect().height;
@@ -95,8 +98,13 @@ void World::update()
                     double yy = y - cursor_y;
                     double distance = std::sqrt((xx * xx) + (yy * yy));
 
-                    if (distance <= brush_radius && get_cell_id(x, y) == MaterialType::EMPTY)
+                    if (distance > brush_radius)
+                        continue;
+
+                    if (placing && get_cell_id(x, y) == MaterialType::EMPTY)
                         set_cell(x, y, Engine::get().get_selected_material());
+                    else if (erasing && get_cell_id(x, y) != MaterialType::EMPTY)
+                        set_cell(x, y, MaterialType::EMPTY);
                 }
             }
         }
