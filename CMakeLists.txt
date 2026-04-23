@@ -21,6 +21,16 @@ INCLUDE(FetchContent)
 FIND_PACKAGE(SDL2 REQUIRED)
 FIND_PACKAGE(SDL2_ttf REQUIRED)
 
+# ---- EMBEDDED ASSETS ----
+
+FILE(READ "assets/fonts/pixel_font.ttf" FONT_HEX HEX)
+STRING(REGEX REPLACE "([0-9a-f][0-9a-f])" "0x\\1," FONT_BYTES "${FONT_HEX}")
+CONFIGURE_FILE(
+    "${CMAKE_SOURCE_DIR}/cmake/font_data.h.in"
+    "${CMAKE_BINARY_DIR}/generated/font_data.h"
+    @ONLY
+)
+
 # ---- SOURCE FILES ----
 
 FILE(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "src/*.cpp")
@@ -44,6 +54,7 @@ endif()
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PRIVATE
     include
     ${SDL2_INCLUDE_DIRS}
+    "${CMAKE_BINARY_DIR}/generated"
 )
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE

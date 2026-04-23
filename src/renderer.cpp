@@ -5,6 +5,7 @@
 #include "ui/ui_panel.h"
 #include "ui/ui_label.h"
 #include "ui/ui_button.h"
+#include "font_data.h"
 
 UIManager *ui_manager = nullptr;
 WindowManager *window_manager = nullptr;
@@ -56,7 +57,7 @@ static void draw_circle(SDL_Renderer *renderer, int cx, int cy, int radius)
 
 void draw_ui(SDL_Renderer *sdl_renderer_ptr, int width, int height)
 {
-    fps_label_ptr->set_text("FPS: " + std::to_string(Engine::get().get_current_fps()));
+    fps_label_ptr->set_text("");
 
     ui_manager->render(sdl_renderer_ptr);
 }
@@ -68,7 +69,8 @@ bool Renderer::initialize(const World *world_ptr, SDL_Renderer *sdl_renderer_ptr
         SDL_Log("Font system failed to initialize: %s", TTF_GetError());
     }
 
-    debug_font = TTF_OpenFont("assets/fonts/pixel_font.ttf", 32);
+    SDL_RWops *font_rw = SDL_RWFromConstMem(pixel_font_data, (int)pixel_font_size);
+    debug_font = TTF_OpenFontRW(font_rw, 1, 32);
     if (!debug_font)
     {
         SDL_Log("Font failed to load: %s", TTF_GetError());

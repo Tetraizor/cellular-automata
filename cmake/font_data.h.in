@@ -1,0 +1,5 @@
+#pragma once
+#include <cstddef>
+
+static const unsigned char pixel_font_data[] = { @FONT_BYTES@ };
+static const unsigned int  pixel_font_size   = sizeof(pixel_font_data);
