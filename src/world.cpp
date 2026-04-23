@@ -85,7 +85,7 @@ void World::update()
 
         if (cursor_x >= 0 && cursor_x <= width && cursor_y >= 0 && cursor_y <= height)
         {
-            int brush_radius = 24;
+            int brush_radius = Engine::get().get_brush_radius();
 
             for (int y = cursor_y - brush_radius; y <= cursor_y + brush_radius; y++)
             {

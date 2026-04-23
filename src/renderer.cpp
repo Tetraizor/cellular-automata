@@ -20,6 +20,40 @@ Renderer::~Renderer()
     }
 }
 
+static void draw_circle(SDL_Renderer *renderer, int cx, int cy, int radius)
+{
+    int x = radius - 1;
+    int y = 0;
+    int dx = 1;
+    int dy = 1;
+    int err = dx - (radius << 1);
+
+    while (x >= y)
+    {
+        SDL_RenderDrawPoint(renderer, cx + x, cy + y);
+        SDL_RenderDrawPoint(renderer, cx + x, cy - y);
+        SDL_RenderDrawPoint(renderer, cx - x, cy + y);
+        SDL_RenderDrawPoint(renderer, cx - x, cy - y);
+        SDL_RenderDrawPoint(renderer, cx + y, cy + x);
+        SDL_RenderDrawPoint(renderer, cx + y, cy - x);
+        SDL_RenderDrawPoint(renderer, cx - y, cy + x);
+        SDL_RenderDrawPoint(renderer, cx - y, cy - x);
+
+        if (err <= 0)
+        {
+            y++;
+            err += dy;
+            dy += 2;
+        }
+        if (err > 0)
+        {
+            x--;
+            dx += 2;
+            err += dx - (radius << 1);
+        }
+    }
+}
+
 void draw_ui(SDL_Renderer *sdl_renderer_ptr, int width, int height)
 {
     fps_label_ptr->set_text(std::to_string(Engine::get().get_current_fps()));
@@ -59,6 +93,15 @@ bool Renderer::initialize(const World *world_ptr, SDL_Renderer *sdl_renderer_ptr
     auto rp_bg = std::make_unique<UIPanel>(rp_x, 0, rp_w, height, 0xFF252525);
     ui_manager->add_element(std::move(rp_bg));
 
+    int btn_margin = 8;
+    int btn_w = rp_w - btn_margin * 2;
+    int btn_h = 32;
+    int btn_gap = 6;
+
+    // Material section
+    auto mat_label = std::make_unique<UILabel>(rp_x + btn_margin, 14, debug_font, "Material", 0xFFAAAAAA);
+    ui_manager->add_element(std::move(mat_label));
+
     struct MatDef { uint8_t type; const char *name; uint32_t color; };
     MatDef materials[] = {
         { MaterialType::SAND,  "Sand",  mat_colors[MaterialType::SAND]  },
@@ -67,23 +110,47 @@ bool Renderer::initialize(const World *world_ptr, SDL_Renderer *sdl_renderer_ptr
         { MaterialType::GAS,   "Gas",   mat_colors[MaterialType::GAS]   },
     };
 
-    int btn_margin = 8;
-    int btn_w = rp_w - btn_margin * 2;
-    int btn_h = 32;
-    int btn_gap = 6;
-    int btn_start_y = 50;
-
+    int mat_start_y = 38;
     for (int i = 0; i < 4; ++i)
     {
         uint8_t mat_type = materials[i].type;
         int bx = rp_x + btn_margin;
-        int by = btn_start_y + i * (btn_h + btn_gap);
+        int by = mat_start_y + i * (btn_h + btn_gap);
 
         auto btn = std::make_unique<UIButton>(
             bx, by, btn_w, btn_h, zoom,
             debug_font, materials[i].name, materials[i].color,
             [mat_type]() { Engine::get().set_selected_material(mat_type); },
             [mat_type]() { return Engine::get().get_selected_material() == mat_type; });
+
+        ui_manager->add_element(std::move(btn));
+    }
+
+    // Brush size section
+    int brush_section_y = mat_start_y + 4 * (btn_h + btn_gap) + 14;
+    auto brush_label = std::make_unique<UILabel>(rp_x + btn_margin, brush_section_y, debug_font, "Brush Size", 0xFFAAAAAA);
+    ui_manager->add_element(std::move(brush_label));
+
+    struct BrushDef { int radius; const char *name; };
+    BrushDef brushes[] = {
+        {  6, "Small"   },
+        { 16, "Medium"  },
+        { 24, "Large"   },
+        { 48, "X-Large" },
+    };
+
+    int brush_start_y = brush_section_y + 24;
+    for (int i = 0; i < 4; ++i)
+    {
+        int radius = brushes[i].radius;
+        int bx = rp_x + btn_margin;
+        int by = brush_start_y + i * (btn_h + btn_gap);
+
+        auto btn = std::make_unique<UIButton>(
+            bx, by, btn_w, btn_h, zoom,
+            debug_font, brushes[i].name, 0xFF606060,
+            [radius]() { Engine::get().set_brush_radius(radius); },
+            [radius]() { return Engine::get().get_brush_radius() == radius; });
 
         ui_manager->add_element(std::move(btn));
     }
@@ -137,6 +204,18 @@ void Renderer::render()
 
     // UI
     draw_ui(sdl_renderer_ptr, width, height);
+
+    // Cursor circle
+    InputManager *im = Engine::get().get_input_manager();
+    int zoom_factor = window_manager->get_zoom_factor();
+    int cx = im->get_cursor_x() * zoom_factor;
+    int cy = im->get_cursor_y() * zoom_factor;
+    int cr = Engine::get().get_brush_radius() * zoom_factor;
+
+    SDL_SetRenderDrawBlendMode(sdl_renderer_ptr, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(sdl_renderer_ptr, 255, 255, 255, 180);
+    draw_circle(sdl_renderer_ptr, cx, cy, cr);
+    SDL_SetRenderDrawBlendMode(sdl_renderer_ptr, SDL_BLENDMODE_NONE);
 
     SDL_RenderPresent(sdl_renderer_ptr);
 }

@@ -36,6 +36,9 @@ public:
     uint8_t get_selected_material() const { return selected_material; }
     void set_selected_material(uint8_t m) { selected_material = m; }
 
+    int get_brush_radius() const { return brush_radius; }
+    void set_brush_radius(int r) { brush_radius = r; }
+
 private:
     Engine();
     ~Engine();
@@ -53,6 +56,7 @@ private:
     int world_width;
     int zoom_factor;
     uint8_t selected_material = 1; // defaults to SAND
+    int brush_radius = 24;
 
     WindowManager wm;
     Renderer renderer;
