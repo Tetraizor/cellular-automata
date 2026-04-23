@@ -8,7 +8,7 @@
 struct Cell
 {
     uint8_t id;
-    uint8_t update_frame; // Tracks which frame this cell was last updated
+    uint8_t update_frame;
 };
 
 enum MaterialType : uint8_t
@@ -61,6 +61,10 @@ public:
     void set_cell(int x, int y, uint8_t new_id);
     uint8_t get_world_frame() const { return world_frame; }
 
+    bool is_sleeping(int x, int y) const;
+    void set_sleeping(int x, int y, bool val);
+    void wake_neighbors(int x, int y);
+
     int coords_to_index(int x, int y) const;
     std::pair<int, int> index_to_coords(int index) const;
 
@@ -72,4 +76,5 @@ private:
     int height;
     std::vector<Cell> grid;
     std::vector<uint32_t> flat_cell_color_list;
+    std::vector<bool> sleeping;
 };

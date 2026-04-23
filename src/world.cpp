@@ -38,6 +38,7 @@ void World::initialize(int width, int height)
     World::height = height;
     World::grid.resize(width * height);
     World::flat_cell_color_list.resize(width * height);
+    World::sleeping.assign(width * height, false);
 
     wm = Engine::get().get_window_manager();
 
@@ -53,6 +54,28 @@ void World::clear()
             set_cell(x, y, MaterialType::EMPTY);
         }
     }
+    std::fill(sleeping.begin(), sleeping.end(), false);
+}
+
+bool World::is_sleeping(int x, int y) const
+{
+    return sleeping[coords_to_index(x, y)];
+}
+
+void World::set_sleeping(int x, int y, bool val)
+{
+    sleeping[coords_to_index(x, y)] = val;
+}
+
+void World::wake_neighbors(int x, int y)
+{
+    for (int dy = -1; dy <= 1; dy++)
+        for (int dx = -1; dx <= 1; dx++)
+        {
+            int nx = x + dx, ny = y + dy;
+            if (nx >= 0 && nx < width && ny >= 0 && ny < height)
+                sleeping[coords_to_index(nx, ny)] = false;
+        }
 }
 
 inline void update_cell(World &world, int x, int y)
@@ -62,6 +85,9 @@ inline void update_cell(World &world, int x, int y)
     const Cell &cell = world.get_cell(index);
 
     if (cell.id == MaterialType::EMPTY)
+        return;
+
+    if (world.is_sleeping(x, y))
         return;
 
     switch (cell.id)
@@ -193,6 +219,8 @@ void World::set_cell(int x, int y, uint8_t new_id)
     int index = coords_to_index(x, y);
     grid[index].id = new_id;
     flat_cell_color_list[index] = vary_color(mat_colors[new_id], mat_variance[new_id], rng_state);
+    sleeping[index] = false;
+    wake_neighbors(x, y);
 }
 
 int World::coords_to_index(int x, int y) const
@@ -221,11 +249,16 @@ void World::move_cell(int x1, int y1, int x2, int y2)
     int idx1 = coords_to_index(x1, y1);
     int idx2 = coords_to_index(x2, y2);
 
-    grid[idx2].id            = grid[idx1].id;
-    flat_cell_color_list[idx2] = flat_cell_color_list[idx1]; // preserve varied color
+    grid[idx2].id              = grid[idx1].id;
+    flat_cell_color_list[idx2] = flat_cell_color_list[idx1];
+    sleeping[idx2]             = false;
 
-    grid[idx1].id            = MaterialType::EMPTY;
+    grid[idx1].id              = MaterialType::EMPTY;
     flat_cell_color_list[idx1] = mat_colors[MaterialType::EMPTY];
+    sleeping[idx1]             = false;
+
+    wake_neighbors(x1, y1);
+    wake_neighbors(x2, y2);
 }
 
 void World::swap_cells(int x1, int y1, int x2, int y2)
@@ -233,8 +266,13 @@ void World::swap_cells(int x1, int y1, int x2, int y2)
     int idx1 = coords_to_index(x1, y1);
     int idx2 = coords_to_index(x2, y2);
 
-    std::swap(grid[idx1].id,              grid[idx2].id);
-    std::swap(flat_cell_color_list[idx1], flat_cell_color_list[idx2]);
+    std::swap(grid[idx1].id,               grid[idx2].id);
+    std::swap(flat_cell_color_list[idx1],  flat_cell_color_list[idx2]);
+    sleeping[idx1] = false;
+    sleeping[idx2] = false;
+
+    wake_neighbors(x1, y1);
+    wake_neighbors(x2, y2);
 }
 
 const Cell &World::get_cell(int x, int y) const

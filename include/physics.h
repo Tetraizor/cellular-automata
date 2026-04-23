@@ -148,7 +148,7 @@ namespace Physics
             return;
         }
 
-        const int MAX_SPREAD = 40;
+        constexpr int MAX_SPREAD = 40;
 
         for (int i = 1; i <= MAX_SPREAD; ++i)
         {
@@ -189,6 +189,8 @@ namespace Physics
             if (id != MaterialType::WATER)
                 break;
         }
+
+        world.set_sleeping(x, y, true);
     }
 
     inline void update_gas(World &world, int x, int y)
